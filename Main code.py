@@ -24,12 +24,14 @@ notebook = ttk.Notebook(window)
 
 # Create frames for each tab
 Homepage = ttk.Frame(notebook)
+Deals = ttk.Frame(notebook)
 Pizza = ttk.Frame(notebook)
 Sides = ttk.Frame(notebook)
 Drinksdesserts = ttk.Frame(notebook)
 
 # Add tabs to the notebook
 notebook.add(Homepage, text="Homepage")
+notebook.add(Deals, text="Deals")
 notebook.add(Pizza, text="Pizza")
 notebook.add(Sides, text="Sides")
 notebook.add(Drinksdesserts, text="Drinks And Desserts")
@@ -71,6 +73,14 @@ button_to_homepage.pack(pady=10)
 
 # Adding the menu items
 Pizza_label = tk.Label(Pizza, text="Pizza Menu", font=("Arial", 24), bg=bg_color, fg=fg_color)
+Pizza_label.pack(pady=20)
+
+Sides_label = tk.Label(Sides, text="Sides Menu", font=("Arial", 24), bg=bg_color, fg=fg_color)
+Sides_label.pack(pady=20)
+
+Desserts_label = tk.Label(Drinksdesserts, text="Desserts Menu", font=("Arial", 24), bg=bg_color, fg=fg_color)
+Desserts_label.pack(pady=20)
+
 
 pizza_menu = [
     ("Margherita", "$11.99"),
@@ -81,9 +91,43 @@ pizza_menu = [
     ("Hawaiian", "$16.40")
 ]
 
-for item, price in pizza_menu:
-    label = tk.Label(Pizza, text=f"{item}: {price}", font=("Arial", 16), bg=bg_color, fg=fg_color)
-    label.pack(pady=10)
+sides_menu = [
+    ("Curly Fries", "$3.99"),
+    ("Garlic Bread", "$4.99"),
+    ("Cheesy Bread", "$5.99"),
+    ("Chicken Wings", "$8.99"),
+    ("Salad", "$6.99"),
+]
+
+Desserts_menu = [	
+    ("Classic Tiramisu", "$11.50"),
+    ("Chocolate Lava Cake", "$13.50"),
+    ("Cannoli", "$9.99"),
+    ("New York Cheesecake", "$11.50"),
+    ("Zeppole (Italian Doughnuts)", "$9.99"),
+    ("Gelato", "$13.99")
+]
+Drinks_menu = [
+    ("Italian Soda", "$7.50"),
+    ("Limoncello", "$5.95"),
+    ("Sprite", "$4.50"),
+    ("Coke", "$4.50")
+]
+# Create labels for pizza and sides menus
+# Function to create labels for menu items
+def create_menu_labels(menu, parent):
+    for item, price in menu:
+        label = tk.Label(parent, text=f"{item}: {price}", font=("Arial", 16), bg=bg_color, fg=fg_color)
+        label.pack(pady=10)
+create_menu_labels(pizza_menu, Pizza)
+create_menu_labels(sides_menu, Sides)
+create_menu_labels(Desserts_menu, Drinksdesserts)
+
+Drinks_label = tk.Label(Drinksdesserts, text="Drinks Menu", font=("Arial", 24), bg=bg_color, fg=fg_color)
+Drinks_label.pack(pady=20)
+
+create_menu_labels(Drinks_menu, Drinksdesserts)
+
 # Adding the logo
 logo = Image.open("logo.jpg") 
 logo = logo.resize((125, 125))
