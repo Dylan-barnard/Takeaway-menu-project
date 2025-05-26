@@ -16,7 +16,7 @@ button_color_active_hover = "green"
 # Create the main window
 window=tk.Tk()
 window.geometry("1200x1000")
-window.title("Discount Dominos")
+window.title("Pizza House")
 window.config(bg="#000000")
 
 # Create a Notebook widget
@@ -29,6 +29,7 @@ Pizza = ttk.Frame(notebook, style="Custom.TFrame")
 Sides = ttk.Frame(notebook, style="Custom.TFrame")
 Deals = ttk.Frame(notebook, style="Custom.TFrame")
 Drinksdesserts = ttk.Frame(notebook, style="Custom.TFrame")
+Cart = ttk.Frame(notebook, style="Custom.TFrame")
 
 # Define the style for the notebook
 style=ttk.Style()
@@ -40,6 +41,7 @@ notebook.add(Deals, text="Deals")
 notebook.add(Pizza, text="Pizza")
 notebook.add(Sides, text="Sides")
 notebook.add(Drinksdesserts, text="Drinks And Desserts")
+notebook.add(Cart, text="Cart")
 notebook.pack(expand=True, fill="both")
 
 # Functions for switching between tabs
@@ -57,6 +59,46 @@ def switch_to_homepage():
 
 def switch_to_deals():
     notebook.select(Deals)
+
+def switch_to_cart():
+    notebook.select(Cart)
+
+# dictionary to store the cart items
+cart = {}
+
+# Create a listbox for the cart display in the cart tab
+cart_display = tk.Listbox(Cart, width=50, height=20, bg=bg_color, fg=fg_color)
+cart_display.pack(pady=20)
+
+# Function to add items to the cart
+def add_to_cart(item_name, quantity):
+    if quantity <= 0:
+        messagebox.showerror("Error", "Quantity must be at least 1")
+        return
+    cart[item_name] = cart.get(item_name, 0) + quantity
+    messagebox.showinfo("Added to Cart", f"{quantity} x {item_name} added to cart")
+
+# Function to update the cart display
+def update_cart_display():
+    global cart_display
+    # Clear the cart display
+    cart_display.delete(0, tk.END)
+
+    # Add items from the cart to the display
+    total_price = 0
+    for item_name, quantity in cart.items():
+        if quantity > 0:
+            price = next(price for item, price in (pizza_menu + sides_menu + 
+            Desserts_menu + Drinks_menu) if item == item_name)
+            total_price += price * quantity
+            cart_display.insert(tk.END, f"{item_name} x {quantity} = ${price:.2f} = ${price * quantity:.2f}")
+        
+    # Add the total price to the display
+    cart_display.insert(tk.END, f"Total: ${total_price:.2f}")
+
+    
+
+update_cart_display()
 
 # Adding content to the Homepage tab that will have buttons to switch between tabs
 Homepage_label = tk.Label(Homepage, text="Welcome to the Discount Dominos", font=("Arial", 24), bg=button_color_active, fg=fg_color)
@@ -86,17 +128,6 @@ button_to_homepage.pack(pady=10)
 
 button_to_homepage = tk.Button(Deals, text="Back to Homepage", command=switch_to_homepage, bg=button_color, fg=fg_color)
 button_to_homepage.pack(pady=10)
-
-# dictionary to store the cart items
-cart = {}
-
-# Function to add items to the cart
-def add_to_cart(item_name, quantity):
-    if quantity <= 0:
-        messagebox.showerror("Error", "Quantity must be at least 1")
-        return
-    cart[item_name] = cart.get(item_name, 0) + quantity
-    messagebox.showinfo("Added to Cart", f"{quantity} x {item_name} added to cart")
 
 # dictionary to select the quantity of the items
 quantity_selectors = []
@@ -129,8 +160,9 @@ deals = {
 
 # Adding the deals to the Deals tab
 Deals_label = tk.Label(Deals, text="Deals", font=("Arial", 24), bg=bg_color, fg=fg_color)
+Deals_label.pack(pady=20)
 
-# Adding the menu items
+# Storing the menu items in a dictionary
 Pizza_label = tk.Label(Pizza, text="Pizza Menu", font=("Arial", 24), bg=bg_color, fg=fg_color)
 Pizza_label.pack(pady=20)
 
@@ -174,7 +206,7 @@ Drinks_menu = [
 ]
 
 # dictionary to store the menu prices
-menu_prices = {
+price = {
     "Margherita": 11.99,
     "Pepperoni Classic": 14.99,
     "Buffalo Chicken": 17.99,
@@ -204,24 +236,129 @@ def create_deal_labels(deals, parent):
         label = tk.Label(parent, text=f"{deal}: {description}", font=("Arial", 16), bg=bg_color, fg=fg_color)
         label.pack(pady=10)
 
-# Function to create labels for menu items
-def create_menu_labels(menu, parent):
-    for item, price in menu:
-        label = tk.Label(parent, text=f"{item}: {price}", font=("Arial", 16), bg=bg_color, fg=fg_color)
-        label.pack(pady=10)
-create_menu_labels(pizza_menu, Pizza)
-create_menu_labels(sides_menu, Sides)
-create_menu_labels(Desserts_menu, Drinksdesserts)
-create_menu_labels(deals.items(), Deals)
+# Adding the deals to the Deals tab
+create_deal_labels(deals, Deals)
+Deals_label.pack(pady=20)
 
+# Adding spinboxes for the quantity of each item in the pizza menu
+for item_name, price in pizza_menu:
+    # Create a frame for each item
+    item_frame= tk.Frame(Pizza, bg=bg_color)
+    item_frame.pack(pady=10)
+
+    # Display the item name and price
+    item_label = tk.Label(item_frame, text=f"{item_name}: {price}", font=("Arial", 16), bg=bg_color, fg=fg_color)
+    item_label.pack(side=tk.LEFT, padx=10)
+
+    # create a spinbox for quantity
+    quantity_spinbox = tk.Spinbox(item_frame, from_=0, to=10, width=5, bg=button_color, fg=fg_color)
+    quantity_spinbox.pack(side=tk.LEFT, padx=10)
+    quantity_selectors.append((item_name, quantity_spinbox))
+    # create an add to cart button
+    add_to_cart_button = tk.Button(
+        item_frame,
+        text="Add to Cart", 
+        command=lambda item=item_name, spinbox=quantity_spinbox: 
+        add_to_cart(item, int(spinbox.get())), bg=button_color, 
+        fg=fg_color
+        )
+    add_to_cart_button.pack(side=tk.LEFT, padx=10)
+# Adding spinboxes for the quantity of each item in the sides menu
+for item_name, price in sides_menu:
+    # Create a frame for each item
+    item_frame= tk.Frame(Sides, bg=bg_color)
+    item_frame.pack(pady=10)
+
+    # Display the item name and price
+    item_label = tk.Label(item_frame, text=f"{item_name}: {price}", font=("Arial", 16), bg=bg_color, fg=fg_color)
+    item_label.pack(side=tk.LEFT, padx=10)
+
+    # create a spinbox for quantity
+    quantity_spinbox = tk.Spinbox(item_frame, from_=0, to=10, width=5, bg=button_color, fg=fg_color)
+    quantity_spinbox.pack(side=tk.LEFT, padx=10)
+    quantity_selectors.append((item_name, quantity_spinbox))
+    # create an add to cart button
+    add_to_cart_button = tk.Button(
+        item_frame,
+        text="Add to Cart", 
+        command=lambda item=item_name, spinbox=quantity_spinbox: 
+        add_to_cart(item, int(spinbox.get())), bg=button_color, 
+        fg=fg_color
+        )
+    add_to_cart_button.pack(side=tk.LEFT, padx=10)
+# Adding spinboxes for the quantity of each item in the desserts menu
+for item_name, price in Desserts_menu:
+    # Create a frame for each item
+    item_frame= tk.Frame(Drinksdesserts, bg=bg_color)
+    item_frame.pack(pady=10)
+
+    # Display the item name and price
+    item_label = tk.Label(item_frame, text=f"{item_name}: {price}", font=("Arial", 16), bg=bg_color, fg=fg_color)
+    item_label.pack(side=tk.LEFT, padx=10)
+
+    # create a spinbox for quantity
+    quantity_spinbox = tk.Spinbox(item_frame, from_=0, to=10, width=5, bg=button_color, fg=fg_color)
+    quantity_spinbox.pack(side=tk.LEFT, padx=10)
+    quantity_selectors.append((item_name, quantity_spinbox))
+    # create an add to cart button
+    add_to_cart_button = tk.Button(
+        item_frame,
+        text="Add to Cart", 
+        command=lambda item=item_name, spinbox=quantity_spinbox: 
+        add_to_cart(item, int(spinbox.get())), bg=button_color, 
+        fg=fg_color
+        )
+    add_to_cart_button.pack(side=tk.LEFT, padx=10)
+
+# Adding the drinks menu heading
 Drinks_label = tk.Label(Drinksdesserts, text="Drinks Menu", font=("Arial", 24), bg=bg_color, fg=fg_color)
 Drinks_label.pack(pady=20)
+# Adding spinboxes for the quantity of each item in the drinks menu
+for item_name, price in Drinks_menu:
+    # Create a frame for each item
+    item_frame= tk.Frame(Drinksdesserts, bg=bg_color)
+    item_frame.pack(pady=10)
 
-create_menu_labels(Drinks_menu, Drinksdesserts)
+    # Display the item name and price
+    item_label = tk.Label(item_frame, text=f"{item_name}: {price}", font=("Arial", 16), bg=bg_color, fg=fg_color)
+    item_label.pack(side=tk.LEFT, padx=10)
 
-# Adding spinboxes for quantity selection
-for item in pizza_menu:
-    create_quantity_selector(Pizza, item[0])
+    # create a spinbox for quantity
+    quantity_spinbox = tk.Spinbox(item_frame, from_=0, to=10, width=5, bg=button_color, fg=fg_color)
+    quantity_spinbox.pack(side=tk.LEFT, padx=10)
+    quantity_selectors.append((item_name, quantity_spinbox))
+    # create an add to cart button
+    add_to_cart_button = tk.Button(
+        item_frame,
+        text="Add to Cart", 
+        command=lambda item=item_name, spinbox=quantity_spinbox: 
+        add_to_cart(item, int(spinbox.get())), bg=button_color, 
+        fg=fg_color
+        )
+    add_to_cart_button.pack(side=tk.LEFT, padx=10)
+
+# Function to remove items from the cart
+def remove_from_cart(item_name):
+    if item_name in cart:
+        del cart[item_name]
+        messagebox.showinfo("Removed from Cart", f"{item_name} removed from cart")
+    else:
+        messagebox.showerror("Error", f"{item_name} not found in cart")
+
+# Button to remove items from the cart
+remove_button = tk.Button(window, text="Remove from Cart", command=lambda: remove_from_cart(item_name), bg=button_color, fg=fg_color)
+
+# Adding a button to view the cart
+def view_cart():
+    cart_items = "\n".join([f"{item}: {quantity}" for item, quantity in cart.items()])
+    if cart_items != "":
+        messagebox.showinfo("Cart", cart_items)
+    else:
+        messagebox.showinfo("Cart", "Your cart is empty")
+
+view_cart_button = tk.Button(window, text="View Cart", command=view_cart, bg=button_color, fg=fg_color)
+view_cart_button.pack(pady=10)
+
 
 # Adding the logo
 logo = Image.open("logo.jpg") 
