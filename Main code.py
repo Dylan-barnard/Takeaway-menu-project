@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter import *
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
+from functools import partial
 
 # Variables for the colors of the GUI
 bg_color = "black"
@@ -75,16 +76,18 @@ def add_to_cart(item_name, quantity):
     if quantity <= 0:
         messagebox.showerror("Error", "Quantity must be at least 1")
         return
-    if quantity > 100:
+    current_quantity = cart.get(item_name, 0)
+    if current_quantity + quantity > 100:  # Check if quantity exceeds 100
         messagebox.showerror("Error", "Quantity cannot exceed 100")
         return
     cart[item_name] = cart.get(item_name, 0) + quantity
-    messagebox.showinfo("Added to Cart", f"{quantity} x {item_name} added to cart")
+    messagebox.showinfo("Added to Cart", f"{quantity} x {item_name} added "
+    "to cart")
     update_cart_display()  # Refresh the cart display after adding an item
 
 # Function to update the cart display
 def update_cart_display():
-    global cart_display
+    global cart_display, discounted_price
     # Clear the cart display
     cart_display.delete(0, tk.END)
 
@@ -93,9 +96,20 @@ def update_cart_display():
     for item_name, quantity in cart.items():
         if quantity > 0:
             # Fetch the price from the price dictionary
-            item_price = price[item_name]
+            item_price = price.get(item_name,
+                                    0) if "Free" not in item_name else 0
             total_price += item_price * quantity
-            cart_display.insert(tk.END, f"{item_name} x {quantity} = ${item_price:.2f} = ${item_price * quantity:.2f}")
+            cart_display.insert(
+                tk.END, 
+                f"{item_name} x {quantity} = ${item_price:.2f} = ${item_price 
+                * quantity:.2f}"
+                )
+
+    # Add the discounted price if applicable
+    if 'discounted_price' in globals() and discounted_price is not None:
+        cart_display.insert(tk.END,
+         f"Total after discount: ${discounted_price:.2f}")
+        total_price = discounted_price
         
     # Add the total price to the display
     cart_display.insert(tk.END, f"Total: ${total_price:.2f}")
@@ -104,7 +118,7 @@ def update_cart_display():
 
 update_cart_display()
 
-# Adding content to the Homepage tab that will have buttons to switch between tabs
+# Adding content to the Homepage tab that has buttons to switch between tabs
 Homepage_label = tk.Label(Homepage, text="Welcome to the Discount Dominos",
                            font=("Arial", 24), bg=button_color_active,
                              fg=fg_color)
@@ -188,7 +202,6 @@ deals = {
     "Deal 2": "20% Off on Orders Above $50",
     "Deal 3": "Free Sides with Any Large Pizza",
     "Deal 4": "Buy 2 Desserts, Get 1 Free",
-    "Deal 5": "Free Drink with Any Pizza Order"
 }
 
 # Adding the deals to the Deals tab
@@ -393,6 +406,138 @@ for item_name, item_price in Drinks_menu:
         fg=fg_color
         )
     add_to_cart_button.pack(side=tk.LEFT, padx=10)
+
+# Function to allow selecting of sides if given free sides as a part of a deal
+def show_selection(deal_name, options):
+    # Create a new window for deals selection
+    selection = tk.Toplevel(window)
+    selection.title("Select Your Free Item")
+    selection.geometry("400x300")
+    selection.config(bg=bg_color)
+    
+    # Create a label for the selection
+    topup_label = tk.Label(selection, text="Select Your Free Item:",
+                         font=("Arial", 16), bg=bg_color, fg=fg_color)
+    topup_label.pack(pady=10)
+
+    # Create a listbox for the selection
+    selection_listbox = tk.Listbox(selection, font="Arial",
+                         bg=bg_color, fg=fg_color)
+    for item_name, item_price in zip(
+        options, [price.get(item, 0) for item in options]
+        ):
+        selection_listbox.insert(tk.END, f"{item_name}: {item_price}")
+        selection_listbox.pack(pady=10)
+
+    # Create a function to confirm selection
+    def confirm_selection(selection, listbox):
+        selected_items = listbox.curselection()
+        if not selected_items:
+            messagebox.showerror("Error", "Please select an item")
+            return
+        
+        # Get the selected item
+        selected_item = listbox.get(selected_items[0])
+        item_name = selected_item.split(":")[0].strip()
+        
+        # Add the selected item to the cart
+        cart[f"{item_name} (Free)"] = cart.get(f"{item_name} (Free)", 0) + 1
+        messagebox.showinfo("Selection Confirmed", f"{item_name} "
+        "added to cart")
+        update_cart_display()  # Refresh the cart display after selection
+        
+        # Close the selection window
+        selection.destroy()
+
+    # Create a confirm button
+    confirm_button = tk.Button(selection, text="Confirm Selection",
+                                 command=lambda: confirm_selection(
+                                      selection, selection_listbox),
+                                 bg=button_color, fg=fg_color)
+    confirm_button.pack(pady=10)
+
+
+# Creating a unique selection menu based on the deal selected
+
+sides_options = [
+    item[0] for item in sides_menu
+]
+desserts_options = [
+    item[0] for item in Desserts_menu
+]
+
+
+
+
+applied_deals = set()  # Set to keep track of applied deals
+
+# Function to prevent applying multiple deals at once while applying the deals
+def apply_deal(deal_name):
+    global applied_deals
+    # Check if the deal is already applied
+    if deal_name in applied_deals:
+        messagebox.showerror("Deal Already Applied", f"{deal_name} is "
+        "already applied to your cart")
+        return
+
+    # Apply the deal based on its name
+    if deal_name == "Deal 1":
+        # Buy 1 Pizza, Get 1 Free
+        for item_name in cart.keys():
+            if item_name in price and item_name in [
+                item[0] for item in pizza_menu
+                ]:
+                cart[f"{item_name} (Free)"] = cart.get(f"{item_name} (Free)",
+                                                        0) + 1
+                messagebox.showinfo("Deal Applied", "Deal 1 applied: Buy 1 "
+                "Pizza, Get 1 Free")
+                applied_deals.add(deal_name)  # Mark the deal as applied
+                break
+
+    elif deal_name == "Deal 2":
+        # 20% Off on Orders Above $50
+        total_price = sum(price.get(item_name, 0) * quantity for item_name,
+         quantity in cart.items() if "Free" not in item_name)
+        if total_price >= 50:
+            discount = total_price * 0.20
+            global discounted_price
+            discounted_price = total_price - discount
+            messagebox.showinfo("Deal Applied", f"Deal 2 applied: 20% off! You saved: ${discount:.2f}.")
+            cart_display.delete(0, tk.END)
+            cart_display.insert(tk.END, f"Total after discount: ${discounted_price:.2f}")
+            applied_deals.add(deal_name)  # Mark the deal as applied
+        else:
+            messagebox.showerror("Deal Not Applicable", "Total order must "
+            "be above $50 to apply Deal 2")
+
+    elif deal_name == "Deal 3":
+        # Free Sides with Any Large Pizza
+        options = sides_options
+        show_selection(deal_name, options)
+        applied_deals.add(deal_name)  # Mark the deal as applied
+
+    elif deal_name == "Deal 4":
+        # Buy 2 Desserts, Get 1 Free
+        dessert_count = sum(cart.get(item[0], 0) for item in Desserts_menu)
+        if dessert_count >= 2:
+            options = desserts_options
+            show_selection(deal_name, options)
+            messagebox.showinfo("Deal Applied", "Deal 4 applied: Buy 2 "
+            "Desserts, Get 1 Free")
+            applied_deals.add(deal_name)
+        else:
+            messagebox.showerror("Deal Not Applicable", "You must have at "
+            "least 2 desserts in your cart to apply Deal 4")
+
+# Refresh the cart display after applying a deal
+    update_cart_display()
+
+# Adding buttons to apply each of the deals
+for deal_name in deals.keys():
+    deal_button = tk.Button(Deals, text=f"Apply {deal_name}",
+                            command=partial(apply_deal, deal_name),
+                            bg=button_color, fg=fg_color)
+    deal_button.pack(pady=5)
 
 # Adding the logo
 logo = Image.open("logo.jpg") 
