@@ -45,6 +45,13 @@ notebook.add(Drinksdesserts, text="Drinks And Desserts")
 notebook.add(Cart, text="Cart")
 notebook.pack(expand=True, fill="both")
 
+# adding a confirmation dialog when closing the window
+def on_closing():
+    if messagebox.askokcancel("Exit the program",
+                             "Are you sure you want to exit?"):
+        window.destroy()
+window.protocol("WM_DELETE_WINDOW", on_closing)
+
 # Functions for switching between tabs
 def switch_to_pizza():
     notebook.select(Pizza)
