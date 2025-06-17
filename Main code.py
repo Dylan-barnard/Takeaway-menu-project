@@ -73,17 +73,21 @@ cart_display.pack(pady=20)
 
 # Function to add items to the cart
 def add_to_cart(item_name, quantity):
-    if quantity <= 0:
-        messagebox.showerror("Error", "Quantity must be at least 1")
-        return
-    current_quantity = cart.get(item_name, 0)
-    if current_quantity + quantity > 100:  # Check if quantity exceeds 100
-        messagebox.showerror("Error", "Quantity cannot exceed 100")
-        return
-    cart[item_name] = cart.get(item_name, 0) + quantity
-    messagebox.showinfo("Added to Cart", f"{quantity} x {item_name} added "
-    "to cart")
-    update_cart_display()  # Refresh the cart display after adding an item
+    try:
+        quantity = int(quantity)  # Ensure quantity is an integer
+        if quantity <= 0:
+            messagebox.showerror("Error", "Quantity must be at least 1")
+            return
+        current_quantity = cart.get(item_name, 0)
+        if current_quantity + quantity > 100:  # Check if quantity exceeds 100
+            messagebox.showerror("Error", "Quantity cannot exceed 100")
+            return
+        cart[item_name] = current_quantity + quantity
+        messagebox.showinfo("Added to Cart",
+         f"{quantity} x {item_name} added to cart")
+        update_cart_display()  # Refresh the cart display after adding an item
+    except ValueError:
+        messagebox.showerror("Error", "Please enter a valid quantity")
 
 # Function to update the cart display
 def update_cart_display():
@@ -109,7 +113,6 @@ def update_cart_display():
     if 'discounted_price' in globals() and discounted_price is not None:
         cart_display.insert(tk.END,
          f"Total after discount: ${discounted_price:.2f}")
-        total_price = discounted_price
         
     # Add the total price to the display
     cart_display.insert(tk.END, f"Total: ${total_price:.2f}")
@@ -304,7 +307,11 @@ for item_name, item_price in pizza_menu:
 
     # Create a spinbox for quantity
     quantity_spinbox = tk.Spinbox(item_frame, from_=0, to=10, width=5,
-                                   bg=button_color, fg=fg_color)
+                                   bg=button_color, fg=fg_color,
+                                   validate="key",
+                                    validatecommand=(
+                                        window.register(lambda v: v.isdigit()),
+                                         '%P'))
     quantity_spinbox.pack(side=tk.LEFT, padx=10)
     quantity_selectors.append((item_name, quantity_spinbox))
 
@@ -332,7 +339,10 @@ for item_name, item_price in sides_menu:  # Renamed 'price' to 'item_price'
 
     # Create a spinbox for quantity
     quantity_spinbox = tk.Spinbox(item_frame, from_=0, to=10, width=5,
-                                   bg=button_color, fg=fg_color)
+                                   bg=button_color, fg=fg_color,
+                                   validate="key", validatecommand=(
+                                    window.register(lambda v: v.isdigit()),
+                                     '%P'))
     quantity_spinbox.pack(side=tk.LEFT, padx=10)
     quantity_selectors.append((item_name, quantity_spinbox))
 
@@ -360,7 +370,11 @@ for item_name, item_price in Desserts_menu:
 
     # Create a spinbox for quantity
     quantity_spinbox = tk.Spinbox(item_frame, from_=0, to=10, width=5,
-                                   bg=button_color, fg=fg_color)
+                                   bg=button_color, fg=fg_color,
+                                   validate="key", 
+                                   validatecommand=(
+                                    window.register(lambda v: v.isdigit()), 
+                                    '%P'))
     quantity_spinbox.pack(side=tk.LEFT, padx=10)
     quantity_selectors.append((item_name, quantity_spinbox))
 
@@ -394,7 +408,10 @@ for item_name, item_price in Drinks_menu:
 
     # create a spinbox for quantity
     quantity_spinbox = tk.Spinbox(item_frame, from_=0, to=10, width=5,
-                                   bg=button_color, fg=fg_color)
+                                   bg=button_color, fg=fg_color,
+                                   validate="key", validatecommand=(
+                                    window.register(lambda v: v.isdigit()),
+                                     '%P'))
     quantity_spinbox.pack(side=tk.LEFT, padx=10)
     quantity_selectors.append((item_name, quantity_spinbox))
     # create an add to cart button
@@ -465,11 +482,13 @@ sides_options = [
 desserts_options = [
     item[0] for item in Desserts_menu
 ]
+pizza_options = [
+    item[0] for item in pizza_menu
+]
 
 
 
-
-applied_deals = set()  # Set to keep track of applied deals
+applied_deals = set()  # A set to keep track of applied deals
 
 # Function to prevent applying multiple deals at once while applying the deals
 def apply_deal(deal_name):
@@ -483,16 +502,21 @@ def apply_deal(deal_name):
     # Apply the deal based on its name
     if deal_name == "Deal 1":
         # Buy 1 Pizza, Get 1 Free
+        applied = False
         for item_name in cart.keys():
             if item_name in price and item_name in [
                 item[0] for item in pizza_menu
                 ]:
-                cart[f"{item_name} (Free)"] = cart.get(f"{item_name} (Free)",
-                                                        0) + 1
+                options = pizza_options
+                show_selection(deal_name, options)
                 messagebox.showinfo("Deal Applied", "Deal 1 applied: Buy 1 "
                 "Pizza, Get 1 Free")
                 applied_deals.add(deal_name)  # Mark the deal as applied
+                applied = True
                 break
+        if not applied:
+            messagebox.showerror("Deal Not Applicable", "You must have a "
+            "pizza in your cart to apply Deal 1")
 
     elif deal_name == "Deal 2":
         # 20% Off on Orders Above $50
@@ -502,19 +526,33 @@ def apply_deal(deal_name):
             discount = total_price * 0.20
             global discounted_price
             discounted_price = total_price - discount
-            messagebox.showinfo("Deal Applied", f"Deal 2 applied: 20% off! You saved: ${discount:.2f}.")
+            messagebox.showinfo("Deal Applied",
+             f"Deal 2 applied: 20% off! You saved: ${discount:.2f}.")
             cart_display.delete(0, tk.END)
-            cart_display.insert(tk.END, f"Total after discount: ${discounted_price:.2f}")
+            cart_display.insert(tk.END,
+             f"Total after discount: ${discounted_price:.2f}")
             applied_deals.add(deal_name)  # Mark the deal as applied
         else:
             messagebox.showerror("Deal Not Applicable", "Total order must "
             "be above $50 to apply Deal 2")
 
     elif deal_name == "Deal 3":
-        # Free Sides with Any Large Pizza
-        options = sides_options
-        show_selection(deal_name, options)
-        applied_deals.add(deal_name)  # Mark the deal as applied
+        # Free Sides with Any Pizza
+        applied = False
+        for item_name in cart.keys():
+            if item_name in price and item_name in [
+                item[0] for item in pizza_menu
+                ]:
+                options = sides_options
+                show_selection(deal_name, options)
+                messagebox.showinfo("Deal Applied", "Deal 3 applied: Free "
+                "Sides with Any Large Pizza")
+                applied_deals.add(deal_name)  # Mark the deal as applied
+                applied = True
+                break
+        if not applied:
+            messagebox.showerror("Deal Not Applicable", "You must have a "
+            "pizza in your cart to apply Deal 3")
 
     elif deal_name == "Deal 4":
         # Buy 2 Desserts, Get 1 Free
