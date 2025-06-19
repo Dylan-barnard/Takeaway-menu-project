@@ -31,6 +31,7 @@ Sides = ttk.Frame(notebook, style="Custom.TFrame")
 Deals = ttk.Frame(notebook, style="Custom.TFrame")
 Drinksdesserts = ttk.Frame(notebook, style="Custom.TFrame")
 Cart = ttk.Frame(notebook, style="Custom.TFrame")
+Checkout = ttk.Frame(notebook, style="Custom.TFrame")
 
 # Define the style for the notebook
 style=ttk.Style()
@@ -43,6 +44,7 @@ notebook.add(Pizza, text="Pizza")
 notebook.add(Sides, text="Sides")
 notebook.add(Drinksdesserts, text="Drinks And Desserts")
 notebook.add(Cart, text="Cart")
+notebook.add(Checkout, text="Checkout")
 notebook.pack(expand=True, fill="both")
 
 # adding a confirmation dialog when closing the window
@@ -71,8 +73,16 @@ def switch_to_deals():
 def switch_to_cart():
     notebook.select(Cart)
 
-# dictionary to store the cart items
+def switch_to_checkout():
+    notebook.select(Checkout)
+
+# Dictionary to store the cart items
 cart = {}
+
+# Create a label for the cart tab
+Cart_label = tk.Label(Cart, text="Your Cart", font=("Arial", 24),
+                        bg=button_color_active, fg=fg_color)
+Cart_label.pack(pady=20)
 
 # Create a listbox for the cart display in the cart tab
 cart_display = tk.Listbox(Cart, width=50, height=20, bg=bg_color, fg=fg_color)
@@ -127,6 +137,39 @@ def update_cart_display():
     
 
 update_cart_display()
+
+# Creating a lsitbox for the menu display in all the tabs
+pizza_menu_display = tk.Listbox(
+    Pizza, width=50, height=20, bg=bg_color, fg=fg_color
+    )
+sides_menu_display = tk.Listbox(
+    Sides, width=50, height=20, bg=bg_color, fg=fg_color
+    )
+desserts_drinks_menu_display = tk.Listbox(
+    Drinksdesserts, width=50, height=20, bg=bg_color, fg=fg_color
+    )
+
+# function to update the display of every tab
+def update_menu_display():
+    global pizza_menu_display, sides_menu_display, desserts_drinks_menu_display
+
+    # Clear the displays
+    pizza_menu_display.delete(0, tk.END)
+    sides_menu_display.delete(0, tk.END)
+    desserts_drinks_menu_display.delete(0, tk.END)
+
+    # Add items to the pizza menu display
+    for item_name, item_price in pizza_menu:
+        pizza_menu_display.insert(tk.END, f"{item_name}: {item_price}")
+
+    # Add items to the sides menu display
+    for item_name, item_price in sides_menu:
+        sides_menu_display.insert(tk.END, f"{item_name}: {item_price}")
+
+    # Add items to the desserts menu display
+    for item_name, item_price in Desserts_menu:
+        desserts_drinks_menu_display.insert(tk.END,
+         f"{item_name}: {item_price}")
 
 # Adding content to the Homepage tab that has buttons to switch between tabs
 Homepage_label = tk.Label(Homepage, text="Welcome to the Discount Dominos",
@@ -216,20 +259,21 @@ deals = {
 
 # Adding the deals to the Deals tab
 Deals_label = tk.Label(Deals, text="Deals", font=("Arial", 24),
-                        bg=bg_color, fg=fg_color)
+                        bg=button_color_active, fg=fg_color)
 Deals_label.pack(pady=20)
 
 # Storing the menu items in a dictionary
 Pizza_label = tk.Label(Pizza, text="Pizza Menu", font=("Arial", 24),
-                        bg=bg_color, fg=fg_color)
+                        bg=button_color_active, fg=fg_color)
 Pizza_label.pack(pady=20)
 
 Sides_label = tk.Label(Sides, text="Sides Menu", font=("Arial", 24),
-                        bg=bg_color, fg=fg_color)
+                        bg=button_color_active, fg=fg_color)
 Sides_label.pack(pady=20)
 
 Desserts_label = tk.Label(Drinksdesserts, text="Desserts Menu",
-                           font=("Arial", 24), bg=bg_color, fg=fg_color)
+                           font=("Arial", 24), bg=button_color_active,
+                            fg=fg_color)
 Desserts_label.pack(pady=20)
 
 
@@ -399,7 +443,7 @@ for item_name, item_price in Desserts_menu:
 
 # Adding the drinks menu heading
 Drinks_label = tk.Label(Drinksdesserts, text="Drinks Menu", font=("Arial", 24),
-                         bg=bg_color, fg=fg_color)
+                         bg=button_color_active, fg=fg_color)
 Drinks_label.pack(pady=20)
 
 # Adding spinboxes for the quantity of each item in the drinks menu
@@ -583,6 +627,208 @@ for deal_name in deals.keys():
                             command=partial(apply_deal, deal_name),
                             bg=button_color, fg=fg_color)
     deal_button.pack(pady=5)
+
+# Creating a checkout button in the cart tab
+def checkout():
+    if not cart:
+        messagebox.showerror("Empty Cart", "Your cart is empty!")
+        return
+    total_price = sum(price.get(item_name, 0) * quantity for item_name,
+     quantity in cart.items() if "Free" not in item_name)
+    if 'discounted_price' in globals() and discounted_price is not None:
+        total_price = discounted_price
+    if messagebox.askyesno("Checkout",
+     "Would you like to proceed with the checkout your total is "
+     f"${total_price:.2f}?"):
+        messagebox.showinfo("Checkout Successful", "Thank you for your order!")
+    switch_to_checkout()
+
+# Adding a checkout button to the cart tab
+checkout_button = tk.Button(Cart, text="Checkout",
+                             command=checkout, bg=button_color,
+                               fg=fg_color)
+checkout_button.pack(pady=20)
+
+# Adding the checkout tab content
+Checkout_label = tk.Label(Checkout, text="Checkout",
+                            font=("Arial", 24), bg=button_color_active,
+                             fg=fg_color)
+Checkout_label.pack(pady=20)
+
+# Adding instructions for the checkout tab
+Checkout_instructions = tk.Label(Checkout,
+    text="Please review your order and proceed to payment.",
+    font=("Arial", 16), bg=bg_color, fg=fg_color)
+Checkout_instructions.pack(pady=10)
+
+# Adding a back button to the checkout tab
+back_to_cart_button = tk.Button(Checkout, text="Back to Cart",
+                                 command=switch_to_cart, bg=button_color,
+                                   fg=fg_color)
+back_to_cart_button.pack(pady=10)
+
+# Adding payment methods
+payment_methods = [
+    "Please select", "Credit Card", "Debit Card", "PayPal", "Cash on Delivery"
+    ]
+
+# Adding a label for payment methods
+payment_label = tk.Label(Checkout, text="Payment Methods",
+                          font=("Arial", 18), bg=bg_color, fg=fg_color)
+payment_label.pack(pady=10)
+
+# Adding a dropdown menu for payment methods
+payment_var = tk.StringVar(value=payment_methods[0])
+payment_dropdown = tk.OptionMenu(Checkout, payment_var,
+                                   *payment_methods)
+payment_dropdown.config(bg=button_color, fg=fg_color)
+payment_dropdown.pack(pady=10)
+
+# Adding a confirm payment button
+def confirm_payment():
+    selected_method = payment_var.get()
+    messagebox.showinfo("Payment Confirmed",
+     f"Your payment method {selected_method} has been confirmed.")
+
+
+# Creating a window to enter the payment details for card
+def enter_payment_details_card():
+    payment_window = tk.Toplevel(window)
+    payment_window.title("Enter Payment Details")
+    payment_window.geometry("400x300")
+    payment_window.config(bg=bg_color)
+
+    # Adding a label for payment details
+    payment_details_label = tk.Label(payment_window,
+        text="Enter your payment details:", font=("Arial", 16),
+        bg=bg_color, fg=fg_color)
+    payment_details_label.pack(pady=10)
+
+    # Adding an entry for card number
+    card_number_label = tk.Label(payment_window, text="Card Number:",
+                                  font=("Arial", 14), bg=bg_color,
+                                  fg=fg_color)
+    card_number_label.pack(pady=5)
+    card_number_entry = tk.Entry(payment_window, width=20)
+    card_number_entry.pack(pady=5)
+
+    # Adding an entry for expiration date
+    expiration_date_label = tk.Label(payment_window,
+        text="Expiration Date (MM/YY):", font=("Arial", 14),
+        bg=bg_color, fg=fg_color)
+    expiration_date_label.pack(pady=5)
+    expiration_date_entry = tk.Entry(payment_window, width=20)
+    expiration_date_entry.pack(pady=5)
+
+    # Adding an entry for CVV
+    cvv_label = tk.Label(payment_window, text="CVV:", font=("Arial", 14),
+                          bg=bg_color, fg=fg_color)
+    cvv_label.pack(pady=5)
+    cvv_entry = tk.Entry(payment_window, width=20, show='*')
+    cvv_entry.pack(pady=5)
+
+    # Adding a confirm button
+    confirm_button = tk.Button(payment_window, text="Confirm",
+                                command=lambda: [messagebox.showinfo(
+                                    "Payment Details Entered",
+                                    "Your payment details have been entered"
+                                    " successfully."),
+                                    payment_window.destroy()],
+                                bg=button_color, fg=fg_color)
+    confirm_button.pack(pady=10)
+
+# Adding a button to enter payment details for PayPal
+def enter_payment_details_paypal():
+    payment_window = tk.Toplevel(window)
+    payment_window.title("Enter Payment Details")
+    payment_window.geometry("400x300")
+    payment_window.config(bg=bg_color)
+
+    # Adding a label for PayPal details
+    paypal_label = tk.Label(payment_window,
+        text="Enter your PayPal email:", font=("Arial", 16),
+        bg=bg_color, fg=fg_color)
+    paypal_label.pack(pady=10)
+
+    # Adding an entry for PayPal email
+    paypal_email_entry = tk.Entry(payment_window, width=30)
+    paypal_email_entry.pack(pady=10)
+
+    # Adding a confirm button
+    confirm_button = tk.Button(payment_window, text="Confirm",
+                                command=lambda: [messagebox.showinfo(
+                                    "Payment Details Entered",
+                                    "Your PayPal email has been entered"
+                                    " successfully."),
+                                    payment_window.destroy()],
+                                bg=button_color, fg=fg_color)
+    confirm_button.pack(pady=10)
+
+# Adding a button to enter payment details for cash
+def enter_payment_details_cash():
+    payment_window = tk.Toplevel(window)
+    payment_window.title("Cash on Delivery")
+    payment_window.geometry("400x300")
+    payment_window.config(bg=bg_color)
+
+    # Adding a label for cash payment
+    cash_label = tk.Label(payment_window,
+        text="You have selected Cash on Delivery.", font=("Arial", 16),
+        bg=bg_color, fg=fg_color)
+    cash_label.pack(pady=10)
+
+    # Adding a confirm button
+    confirm_button = tk.Button(payment_window, text="Confirm",
+                                command=lambda: [messagebox.showinfo(
+                                    "Payment Method Confirmed",
+                                    "Your payment method has been confirmed"
+                                    " successfully."),
+                                    payment_window.destroy()],
+                                bg=button_color, fg=fg_color)
+    confirm_button.pack(pady=10)
+
+# Adding a button to enter payment details based on the selected method
+def enter_payment_details():
+    selected_method = payment_var.get()
+    if selected_method == "Credit Card" or selected_method == "Debit Card":
+        enter_payment_details_card()
+    elif selected_method == "PayPal":
+        enter_payment_details_paypal()
+    elif selected_method == "Cash on Delivery":
+        enter_payment_details_cash()
+    else:
+        messagebox.showerror("Error", "Please select a valid payment method")
+        
+# Adding a button to enter payment details
+enter_payment_details_button = tk.Button(Checkout,
+    text="Enter Payment Details", command=enter_payment_details,
+    bg=button_color, fg=fg_color)
+enter_payment_details_button.pack(pady=10)
+
+# Function to finish the order
+def finish_order():
+    if not cart:
+        messagebox.showerror("Empty Cart", "Your cart is empty!")
+        return
+    total_price = sum(price.get(item_name, 0) * quantity for item_name,
+     quantity in cart.items() if "Free" not in item_name)
+    if 'discounted_price' in globals() and discounted_price is not None:
+        total_price = discounted_price
+    selected_method = payment_var.get()
+    messagebox.showinfo("Order Finished",
+     f"Your order is being delivered! Total: ${total_price:.2f}\n"
+     f"Selected payment method: {selected_method}")
+    cart.clear() 
+    update_cart_display()  # Refresh the cart display after finishing the order
+    applied_deals.clear()  # Clear applied deals
+    update_menu_display()  # Call the function to update the displays
+    switch_to_homepage()  # Switch back to homepage to start a new order
+
+# Adding a button to finish the order
+finish_order_button = tk.Button(Checkout, text="Finish Order",
+                             command=finish_order, bg=button_color,
+                               fg=fg_color)
+finish_order_button.pack(pady=10)
 
 # Adding the logo
 logo = Image.open("logo.jpg") 
