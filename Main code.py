@@ -17,7 +17,7 @@ button_color_active_hover = "green"
 # Create the main window
 window=tk.Tk()
 window.geometry("1200x1000")
-window.title("Pizza House")
+window.title("Doominos")
 window.config(bg="#000000")
 
 # Create a Notebook widget
@@ -138,41 +138,8 @@ def update_cart_display():
 
 update_cart_display()
 
-# Creating a lsitbox for the menu display in all the tabs
-pizza_menu_display = tk.Listbox(
-    Pizza, width=50, height=20, bg=bg_color, fg=fg_color
-    )
-sides_menu_display = tk.Listbox(
-    Sides, width=50, height=20, bg=bg_color, fg=fg_color
-    )
-desserts_drinks_menu_display = tk.Listbox(
-    Drinksdesserts, width=50, height=20, bg=bg_color, fg=fg_color
-    )
-
-# function to update the display of every tab
-def update_menu_display():
-    global pizza_menu_display, sides_menu_display, desserts_drinks_menu_display
-
-    # Clear the displays
-    pizza_menu_display.delete(0, tk.END)
-    sides_menu_display.delete(0, tk.END)
-    desserts_drinks_menu_display.delete(0, tk.END)
-
-    # Add items to the pizza menu display
-    for item_name, item_price in pizza_menu:
-        pizza_menu_display.insert(tk.END, f"{item_name}: {item_price}")
-
-    # Add items to the sides menu display
-    for item_name, item_price in sides_menu:
-        sides_menu_display.insert(tk.END, f"{item_name}: {item_price}")
-
-    # Add items to the desserts menu display
-    for item_name, item_price in Desserts_menu:
-        desserts_drinks_menu_display.insert(tk.END,
-         f"{item_name}: {item_price}")
-
 # Adding content to the Homepage tab that has buttons to switch between tabs
-Homepage_label = tk.Label(Homepage, text="Welcome to the Discount Dominos",
+Homepage_label = tk.Label(Homepage, text="Welcome to Doominos",
                            font=("Arial", 24), bg=button_color_active,
                              fg=fg_color)
 Homepage_label.pack(pady=20)
@@ -484,9 +451,9 @@ def show_selection(deal_name, options):
     selection.config(bg=bg_color)
     
     # Create a label for the selection
-    topup_label = tk.Label(selection, text="Select Your Free Item:",
+    freeitem_label = tk.Label(selection, text="Select Your Free Item:",
                          font=("Arial", 16), bg=bg_color, fg=fg_color)
-    topup_label.pack(pady=10)
+    freeitem_label.pack(pady=10)
 
     # Create a listbox for the selection
     selection_listbox = tk.Listbox(selection, font="Arial",
@@ -689,7 +656,41 @@ def confirm_payment():
     selected_method = payment_var.get()
     messagebox.showinfo("Payment Confirmed",
      f"Your payment method {selected_method} has been confirmed.")
+    
 
+# Function to format expiration date
+def format_expiration_date(event, expiration_date_entry):
+    # Get the current value of the entry
+    current_value = expiration_date_entry.get()
+
+    # Automatically insert '/' after the second character
+    if len(current_value) == 2 and not current_value.endswith('/'):
+        expiration_date_entry.insert(2, '/')
+
+# Function to validate card number and CVV
+def validate_card_number(input_value):
+    # Check if the input is a valid card number (digits only)
+    if input_value.isdigit() and len(input_value) == 16:
+        return True
+    elif not input_value.isdigit():
+        messagebox.showerror("Invalid Card Number",
+         "Card number must be 16 digits long and contain only numbers.")
+    elif len(input_value) > 16:
+        messagebox.showerror("Invalid Card Number",
+         "Card number must be 16 digits long.")
+        return False
+
+def validate_cvv(input_value):
+    # Check if the input is a valid CVV (3 digits)
+    if input_value.isdigit() and len(input_value) == 3:
+        return True
+    elif not input_value.isdigit():
+        messagebox.showerror("Invalid CVV",
+         "CVV must be 3 digits long and contain only numbers.")
+    elif len(input_value) > 3:
+        messagebox.showerror("Invalid CVV",
+         "CVV must be 3 digits long.")
+        return False
 
 # Creating a window to enter the payment details for card
 def enter_payment_details_card():
@@ -709,7 +710,10 @@ def enter_payment_details_card():
                                   font=("Arial", 14), bg=bg_color,
                                   fg=fg_color)
     card_number_label.pack(pady=5)
-    card_number_entry = tk.Entry(payment_window, width=20)
+    card_number_entry = tk.Entry(payment_window, width=20, 
+                                  validate="key",
+                                  validatecommand=(window.register(
+                                      validate_card_number), '%P'))
     card_number_entry.pack(pady=5)
 
     # Adding an entry for expiration date
@@ -719,12 +723,17 @@ def enter_payment_details_card():
     expiration_date_label.pack(pady=5)
     expiration_date_entry = tk.Entry(payment_window, width=20)
     expiration_date_entry.pack(pady=5)
+    expiration_date_entry.bind("<KeyRelease>",
+     lambda event: format_expiration_date(event, expiration_date_entry))
 
     # Adding an entry for CVV
     cvv_label = tk.Label(payment_window, text="CVV:", font=("Arial", 14),
                           bg=bg_color, fg=fg_color)
     cvv_label.pack(pady=5)
-    cvv_entry = tk.Entry(payment_window, width=20, show='*')
+    cvv_entry = tk.Entry(payment_window, width=20, show='*', 
+                          validate="key",
+                          validatecommand=(window.register(
+                              validate_cvv), '%P'))
     cvv_entry.pack(pady=5)
 
     # Adding a confirm button
@@ -818,17 +827,14 @@ def finish_order():
     messagebox.showinfo("Order Finished",
      f"Your order is being delivered! Total: ${total_price:.2f}\n"
      f"Selected payment method: {selected_method}")
-    cart.clear() 
-    update_cart_display()  # Refresh the cart display after finishing the order
-    applied_deals.clear()  # Clear applied deals
-    update_menu_display()  # Call the function to update the displays
-    switch_to_homepage()  # Switch back to homepage to start a new order
+    window.destroy()  # Close the window after finishing the order
+    messagebox.showinfo("Thank You", "Thank you for ordering from Doominos!")
 
 # Adding a button to finish the order
 finish_order_button = tk.Button(Checkout, text="Finish Order",
                              command=finish_order, bg=button_color,
                                fg=fg_color)
-finish_order_button.pack(pady=10)
+finish_order_button.pack(pady=100)
 
 # Adding the logo
 logo = Image.open("logo.jpg") 
