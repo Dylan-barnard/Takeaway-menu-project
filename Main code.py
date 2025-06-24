@@ -667,31 +667,6 @@ def format_expiration_date(event, expiration_date_entry):
     if len(current_value) == 2 and not current_value.endswith('/'):
         expiration_date_entry.insert(2, '/')
 
-# Function to validate card number and CVV
-def validate_card_number(input_value):
-    # Check if the input is a valid card number (digits only)
-    if input_value.isdigit() and len(input_value) == 16:
-        return True
-    elif not input_value.isdigit():
-        messagebox.showerror("Invalid Card Number",
-         "Card number must be 16 digits long and contain only numbers.")
-    elif len(input_value) > 16:
-        messagebox.showerror("Invalid Card Number",
-         "Card number must be 16 digits long.")
-        return False
-
-def validate_cvv(input_value):
-    # Check if the input is a valid CVV (3 digits)
-    if input_value.isdigit() and len(input_value) == 3:
-        return True
-    elif not input_value.isdigit():
-        messagebox.showerror("Invalid CVV",
-         "CVV must be 3 digits long and contain only numbers.")
-    elif len(input_value) > 3:
-        messagebox.showerror("Invalid CVV",
-         "CVV must be 3 digits long.")
-        return False
-
 # Creating a window to enter the payment details for card
 def enter_payment_details_card():
     payment_window = tk.Toplevel(window)
@@ -710,10 +685,7 @@ def enter_payment_details_card():
                                   font=("Arial", 14), bg=bg_color,
                                   fg=fg_color)
     card_number_label.pack(pady=5)
-    card_number_entry = tk.Entry(payment_window, width=20, 
-                                  validate="key",
-                                  validatecommand=(window.register(
-                                      validate_card_number), '%P'))
+    card_number_entry = tk.Entry(payment_window, width=20)
     card_number_entry.pack(pady=5)
 
     # Adding an entry for expiration date
@@ -730,10 +702,7 @@ def enter_payment_details_card():
     cvv_label = tk.Label(payment_window, text="CVV:", font=("Arial", 14),
                           bg=bg_color, fg=fg_color)
     cvv_label.pack(pady=5)
-    cvv_entry = tk.Entry(payment_window, width=20, show='*', 
-                          validate="key",
-                          validatecommand=(window.register(
-                              validate_cvv), '%P'))
+    cvv_entry = tk.Entry(payment_window, width=20, show='*')
     cvv_entry.pack(pady=5)
 
     # Adding a confirm button
@@ -746,8 +715,12 @@ def enter_payment_details_card():
                                 bg=button_color, fg=fg_color)
     confirm_button.pack(pady=10)
 
+# Adding a variable to store the PayPal email entry
+paypal_email_entry = ""
+
 # Adding a button to enter payment details for PayPal
 def enter_payment_details_paypal():
+    global paypal_email_entry
     payment_window = tk.Toplevel(window)
     payment_window.title("Enter Payment Details")
     payment_window.geometry("400x300")
@@ -762,16 +735,24 @@ def enter_payment_details_paypal():
     # Adding an entry for PayPal email
     paypal_email_entry = tk.Entry(payment_window, width=30)
     paypal_email_entry.pack(pady=10)
-
+    
     # Adding a confirm button
     confirm_button = tk.Button(payment_window, text="Confirm",
-                                command=lambda: [messagebox.showinfo(
-                                    "Payment Details Entered",
+                                command=lambda: [store_paypal_email(), 
+                                messagebox.showinfo("Payment Details Entered",
                                     "Your PayPal email has been entered"
                                     " successfully."),
                                     payment_window.destroy()],
                                 bg=button_color, fg=fg_color)
     confirm_button.pack(pady=10)
+
+# Function to store the payment details for paypal email
+def store_paypal_email():
+    global paypal_email_entry, paypal_email
+    paypal_email = paypal_email_entry.get()
+    if not paypal_email:
+        messagebox.showerror("Error", "Please enter a valid PayPal email")
+        return
 
 # Adding a button to enter payment details for cash
 def enter_payment_details_cash():
@@ -821,14 +802,25 @@ def finish_order():
         return
     total_price = sum(price.get(item_name, 0) * quantity for item_name,
      quantity in cart.items() if "Free" not in item_name)
+
     if 'discounted_price' in globals() and discounted_price is not None:
         total_price = discounted_price
     selected_method = payment_var.get()
-    messagebox.showinfo("Order Finished",
-     f"Your order is being delivered! Total: ${total_price:.2f}\n"
-     f"Selected payment method: {selected_method}")
-    window.destroy()  # Close the window after finishing the order
-    messagebox.showinfo("Thank You", "Thank you for ordering from Doominos!")
+    message = f"Your order has been placed successfully!\n"
+    message += f"Total: ${total_price:.2f}\n"
+    message += f"Payment Method: {selected_method}\n"
+    if selected_method == "PayPal":
+        message += f"PayPal Email: {paypal_email}\n"
+    message += "Thank you for ordering from Doominos!"
+    validate_details = messagebox.askokcancel("Order Placed", message)
+    if validate_details == False:
+        return
+    else:
+        messagebox.showinfo("Order Confirmation", "Your order has been "
+        "placed successfully!")
+        window.destroy()  # Close the window after finishing the order
+        messagebox.showinfo("Thank You",
+         "Thank you for ordering from Doominos!")
 
 # Adding a button to finish the order
 finish_order_button = tk.Button(Checkout, text="Finish Order",
