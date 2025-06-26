@@ -707,10 +707,11 @@ def enter_payment_details_card():
 
     # Adding a confirm button
     confirm_button = tk.Button(payment_window, text="Confirm",
-                                command=lambda: [messagebox.showinfo(
+                                command=lambda: [messagebox.askyesno(
                                     "Payment Details Entered",
                                     "Your payment details have been entered"
-                                    " successfully."),
+                                    " successfully.\n"
+                                    " Would you like to proceed?"), 
                                     payment_window.destroy()],
                                 bg=button_color, fg=fg_color)
     confirm_button.pack(pady=10)
@@ -809,6 +810,7 @@ def finish_order():
     message = f"Your order has been placed successfully!\n"
     message += f"Total: ${total_price:.2f}\n"
     message += f"Payment Method: {selected_method}\n"
+
     if selected_method == "PayPal":
         message += f"PayPal Email: {paypal_email}\n"
     message += "Thank you for ordering from Doominos!"
