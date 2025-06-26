@@ -710,7 +710,7 @@ def enter_payment_details_card():
                                 command=lambda: [messagebox.askyesno(
                                     "Payment Details Entered",
                                     "Your payment details have been entered"
-                                    " successfully.\n"
+                                    " successfully."
                                     " Would you like to proceed?"), 
                                     payment_window.destroy()],
                                 bg=button_color, fg=fg_color)
@@ -759,21 +759,24 @@ def store_paypal_email():
 def enter_payment_details_cash():
     payment_window = tk.Toplevel(window)
     payment_window.title("Cash on Delivery")
-    payment_window.geometry("400x300")
+    payment_window.geometry("700x300")
     payment_window.config(bg=bg_color)
 
     # Adding a label for cash payment
     cash_label = tk.Label(payment_window,
-        text="You have selected Cash on Delivery.", font=("Arial", 16),
-        bg=bg_color, fg=fg_color)
+        text="You have selected Cash on Delivery.\n"
+        " Please note that change is available only to the nearest dollar.",
+         font=("Arial", 16),
+        bg=button_color_active, fg=fg_color)
     cash_label.pack(pady=10)
 
     # Adding a confirm button
     confirm_button = tk.Button(payment_window, text="Confirm",
-                                command=lambda: [messagebox.showinfo(
+                                command=lambda: [messagebox.askyesno(
                                     "Payment Method Confirmed",
                                     "Your payment method has been confirmed"
-                                    " successfully."),
+                                    " successfully.\n"
+                                    "Would you like to proceed?"),
                                     payment_window.destroy()],
                                 bg=button_color, fg=fg_color)
     confirm_button.pack(pady=10)
