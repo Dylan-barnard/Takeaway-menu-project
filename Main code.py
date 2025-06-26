@@ -432,6 +432,7 @@ for item_name, item_price in Drinks_menu:
                                      '%P'))
     quantity_spinbox.pack(side=tk.LEFT, padx=10)
     quantity_selectors.append((item_name, quantity_spinbox))
+
     # create an add to cart button
     add_to_cart_button = tk.Button(
         item_frame,
@@ -810,7 +811,7 @@ def finish_order():
     if 'discounted_price' in globals() and discounted_price is not None:
         total_price = discounted_price
     selected_method = payment_var.get()
-    message = f"Your order has been placed successfully!\n"
+    message = "Your order has been placed successfully!\n"
     message += f"Total: ${total_price:.2f}\n"
     message += f"Payment Method: {selected_method}\n"
 
