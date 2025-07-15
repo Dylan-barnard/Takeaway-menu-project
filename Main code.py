@@ -220,8 +220,9 @@ def create_quantity_selector(parent, item_name):
 deals = {
     "Deal 1": "Buy 1 Pizza, Get 1 Free",
     "Deal 2": "20% Off on Orders Above $50",
-    "Deal 3": "Free Sides with Any Large Pizza",
+    "Deal 3": "Free Sides with Any Pizza",
     "Deal 4": "Buy 2 Desserts, Get 1 Free",
+    "Deal 5": "Free Drink with Any 2 Pizzas"
 }
 
 # Adding the deals to the Deals tab
@@ -269,6 +270,7 @@ Desserts_menu = [
     ("Zeppole (Italian Doughnuts)", "$9.99"),
     ("Gelato", "$13.99")
 ]
+
 Drinks_menu = [
     ("Italian Soda", "$7.50"),
     ("Limoncello", "$5.95"),
@@ -479,7 +481,9 @@ def show_selection(deal_name, options):
         # Add the selected item to the cart
         cart[f"{item_name} (Free)"] = cart.get(f"{item_name} (Free)", 0) + 1
         messagebox.showinfo("Selection Confirmed", f"{item_name} "
-        "added to cart")
+        "added to cart\n"
+        f"Total amount saved: {calculate_savings(deal_name)} "
+        f"with {deal_name}")
         update_cart_display()  # Refresh the cart display after selection
         
         # Close the selection window
@@ -498,16 +502,50 @@ def show_selection(deal_name, options):
 sides_options = [
     item[0] for item in sides_menu
 ]
+
 desserts_options = [
     item[0] for item in Desserts_menu
 ]
+
 pizza_options = [
     item[0] for item in pizza_menu
+]
+
+drinks_options = [
+    item[0] for item in Drinks_menu
 ]
 
 
 
 applied_deals = set()  # A set to keep track of applied deals
+
+# Function to display how much is saved with the deal applied
+savings = 0.0  # Variable to store savings amount
+def calculate_savings(deal_name):
+    global savings
+    if deal_name == "Deal 1":
+        # Buy 1 Pizza, Get 1 Free
+        savings = price.get(item_name, item_price) if item_name in price else 0
+    elif deal_name == "Deal 2":
+        # 20% Off on Orders Above $50
+        total_price = sum(price.get(item_name, 0) * quantity for item_name,
+         quantity in cart.items() if "Free" not in item_name)
+        savings = total_price * 0.20 if total_price >= 50 else 0
+    elif deal_name == "Deal 3":
+        # Free Sides with Any Pizza
+        savings = price.get(item_name, item_price) if item_name in price else 0
+    elif deal_name == "Deal 4":
+        # Buy 2 Desserts, Get 1 Free
+        savings = price.get(item_name, item_price) if item_name in price else 0
+    elif deal_name == "Deal 5":
+        # Free Drink with Any 2 Pizzas
+        savings = price.get(item_name, item_price) if item_name in price else 0
+    else:
+        savings = 0.0
+
+def show_savings(deal_name, savings):
+    messagebox.showinfo("Deal Savings",
+                         f"You saved ${savings:.2f} with {deal_name}!")
 
 # Function to prevent applying multiple deals at once while applying the deals
 def apply_deal(deal_name):
@@ -585,6 +623,19 @@ def apply_deal(deal_name):
         else:
             messagebox.showerror("Deal Not Applicable", "You must have at "
             "least 2 desserts in your cart to apply Deal 4")
+
+    elif deal_name == "Deal 5":
+        # Free Drink with Any 2 Pizzas
+        pizza_count = sum(cart.get(item[0], 0) for item in pizza_menu)
+        if pizza_count >= 2:
+            options = drinks_options
+            show_selection(deal_name, options)
+            messagebox.showinfo("Deal Applied", "Deal 5 applied: Free Drink "
+            "with Any 2 Pizzas")
+            applied_deals.add(deal_name)
+        else:
+            messagebox.showerror("Deal Not Applicable", "You must have at "
+            "least 2 pizzas in your cart to apply Deal 5")
 
 # Refresh the cart display after applying a deal
     update_cart_display()
