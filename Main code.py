@@ -13,6 +13,7 @@ button_color = "red"
 button_color_hover = "lightgreen"
 button_color_active = "blue"
 button_color_active_hover = "green"
+button_color_disabled = "gray"
 
 # Create the main window
 window=tk.Tk()
@@ -646,6 +647,124 @@ for deal_name in deals.keys():
                             command=partial(apply_deal, deal_name),
                             bg=button_color, fg=fg_color)
     deal_button.pack(pady=5)
+
+# Function to remove an item from the cart
+def remove_from_cart():
+    selected_item = cart_display.curselection()
+    if not selected_item:
+        messagebox.showerror("Error", "Please select an item to remove")
+        return
+    item_text = cart_display.get(selected_item)
+    item_name = item_text.split(" x ")[0]  # Extract item name from the text
+    if item_name in cart and not item_name.endswith("(Free)"):
+        del cart[item_name]  # Remove the item from the cart
+        check_deals_in_cart()
+
+        # Update the cart display after removing the item
+        update_cart_display()  # Refresh the cart display
+        messagebox.showinfo("Removed from Cart",
+         f"{item_name} has been removed from your cart")
+
+    elif item_name in cart and item_name.endswith("(Free)"):
+        # If the item is a deal item, show an error message
+        messagebox.showerror("Removed from Cart",
+         f"{item_name} is a free item and if removed from the cart will "
+         "delete the deal associated with it. Please remove the paid item from"
+         " the cart first")
+
+    else:
+        messagebox.showerror("Error", "Please select a valid item to remove")
+
+# Adding a check to ensure that deals are removed from the cart
+# if the conditions are not met within the cart
+def check_deals_in_cart():
+    global applied_deals, discounted_price
+    # Check if any deals are applied in the cart
+    if not applied_deals:
+        return
+    for deal_name in applied_deals.copy():
+        if deal_name == "Deal 1":
+            # Buy 1 Pizza, Get 1 Free
+            if not any(item in cart for item in pizza_options):
+                messagebox.showinfo("Deal Removed",
+                 "Deal 1 has been removed from your cart as no pizzas are "
+                 "present")
+                applied_deals.remove(deal_name)
+
+            # Remove the free pizza from the cart if it exists by iterating
+            # through a copy of the cart items
+            for item_name in list(cart.keys()):
+                if item_name.endswith("(Free)"):
+                    del cart[item_name]
+                    update_cart_display()
+
+        elif deal_name == "Deal 2":
+            # 20% Off on Orders Above $50
+            total_price = sum(price.get(item_name, 0) * quantity for item_name,
+             quantity in cart.items() if "Free" not in item_name)
+            if total_price < 50:
+                messagebox.showinfo("Deal Removed",
+                 "Deal 2 has been removed from your cart as total order is "
+                 "below $50")
+                applied_deals.remove(deal_name)
+
+            # Remove the discounted price if it exists
+        if 'discounted_price' in globals() and discounted_price is not None:
+                discounted_price = None
+                update_cart_display()
+
+        elif deal_name == "Deal 3":
+            # Free Sides with Any Pizza
+            if not any(item in cart for item in sides_options):
+                messagebox.showinfo("Deal Removed",
+                 "Deal 3 has been removed from your cart as no sides are "
+                 "present")
+                applied_deals.remove(deal_name)
+
+            # Remove the free sides from the cart if they exist
+            for item_name in list(cart.keys()):
+                if item_name.endswith("(Free)"):
+                    del cart[item_name]
+                    update_cart_display()
+
+        elif deal_name == "Deal 4":
+            # Buy 2 Desserts, Get 1 Free
+            dessert_count = sum(cart.get(item[0], 0) for item in Desserts_menu)
+            if dessert_count < 2:
+                messagebox.showinfo("Deal Removed",
+                 "Deal 4 has been removed from your cart as less than "
+                 "2 desserts are present")
+                applied_deals.remove(deal_name)
+
+                # Remove the free dessert from the cart if it exists
+            for item_name in list(cart.keys()):
+                if item_name.endswith("(Free)"):
+                    del cart[item_name]
+                    update_cart_display()
+
+        elif deal_name == "Deal 5":
+            # Free Drink with Any 2 Pizzas
+            pizza_count = sum(cart.get(item[0], 0) for item in pizza_menu)
+            if pizza_count < 2:
+                messagebox.showinfo("Deal Removed",
+                 "Deal 5 has been removed from your cart as less than "
+                 "2 pizzas are present")
+                applied_deals.remove(deal_name)
+
+            # Remove the free drink from the cart if it exists
+            for item_name in list(cart.keys()):
+                if item_name.endswith("(Free)"):
+                    del cart[item_name]
+                    update_cart_display()
+
+        # Refresh the cart display after checking deals
+        update_cart_display()
+
+    # Adding a remove button to the cart tab
+remove_button = tk.Button(Cart, text="Remove Selected Item",
+                          command=remove_from_cart, bg=button_color,
+                            fg=fg_color)
+remove_button.pack(pady=10)
 
 # Creating a checkout button in the cart tab
 def checkout():
