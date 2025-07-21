@@ -987,16 +987,19 @@ def finish_order():
 
     if selected_method == "PayPal":
         message += f"PayPal Email: {paypal_email}\n"
-    message += "Thank you for ordering from Doominos!"
-    validate_details = messagebox.askokcancel("Order Placed", message)
-    if validate_details == False:
+        message += "Thank you for ordering from Doominos!"
+        validate_details = messagebox.askokcancel("Order Placed", message)
+        messagebox.showinfo("Order Confirmation", f"{validate_details}")
+
+    elif selected_method == "Please select":
+        messagebox.showerror("Error", "Please select a payment method")
+        validate_details = False
         return
+
     else:
         messagebox.showinfo("Order Confirmation", "Your order has been "
         "placed successfully!")
         window.destroy()  # Close the window after finishing the order
-        messagebox.showinfo("Thank You",
-         "Thank you for ordering from Doominos!")
 
 # Adding a button to finish the order
 finish_order_button = tk.Button(Checkout, text="Finish Order",
