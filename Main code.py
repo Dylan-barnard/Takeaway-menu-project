@@ -18,7 +18,7 @@ button_color_disabled = "gray"
 # Create the main window
 window=tk.Tk()
 window.geometry("1200x1000")
-window.title("Doominos")
+window.title("Pizza House")
 window.config(bg="#000000")
 
 # Create a Notebook widget
@@ -140,7 +140,7 @@ def update_cart_display():
 update_cart_display()
 
 # Adding content to the Homepage tab that has buttons to switch between tabs
-Homepage_label = tk.Label(Homepage, text="Welcome to Doominos",
+Homepage_label = tk.Label(Homepage, text="Welcome to Pizza House",
                            font=("Arial", 24), bg=button_color_active,
                              fg=fg_color)
 Homepage_label.pack(pady=20)
@@ -667,7 +667,7 @@ def remove_from_cart():
 
     elif item_name in cart and item_name.endswith("(Free)"):
         # If the item is a deal item, show an error message
-        messagebox.showerror("Removed from Cart",
+        messagebox.showerror("Remove from Cart",
          f"{item_name} is a free item and if removed from the cart will "
          "delete the deal associated with it. Please remove the paid item from"
          " the cart first")
@@ -838,8 +838,14 @@ def format_expiration_date(event, expiration_date_entry):
     if len(current_value) == 2 and not current_value.endswith('/'):
         expiration_date_entry.insert(2, '/')
 
+# Declaration of global variables for card payment details
+card_number_entry = None
+expiration_date_entry = None
+cvv_entry = None
+
 # Creating a window to enter the payment details for card
 def enter_payment_details_card():
+    global card_number_entry, expiration_date_entry, cvv_entry
     payment_window = tk.Toplevel(window)
     payment_window.title("Enter Payment Details")
     payment_window.geometry("400x300")
@@ -878,14 +884,24 @@ def enter_payment_details_card():
 
     # Adding a confirm button
     confirm_button = tk.Button(payment_window, text="Confirm",
-                                command=lambda: [messagebox.askyesno(
-                                    "Payment Details Entered",
+                                command=lambda: [validate_payment_details() and
+                                messagebox.askokcancel("Payment Details "
+                                    "Entered",
                                     "Your payment details have been entered"
-                                    " successfully."
-                                    " Would you like to proceed?"), 
+                                    " successfully. Would you like to procced?"
+                                    ), 
                                     payment_window.destroy()],
                                 bg=button_color, fg=fg_color)
     confirm_button.pack(pady=10)
+
+# Adding a check for if the entry fields are empty
+def validate_payment_details():
+        if not card_number_entry.get() or not expiration_date_entry.get() or \
+           not cvv_entry.get():
+            messagebox.showerror("Error", "Please fill all the payment "
+            "details")
+            return False
+        return True
 
 # Adding a variable to store the PayPal email entry
 paypal_email_entry = ""
@@ -987,12 +1003,13 @@ def finish_order():
 
     if selected_method == "PayPal":
         message += f"PayPal Email: {paypal_email}\n"
-        message += "Thank you for ordering from Doominos!"
+        message += "Thank you for ordering from Pizza House!"
         validate_details = messagebox.askokcancel("Order Placed", message)
         messagebox.showinfo("Order Confirmation", f"{validate_details}")
 
     elif selected_method == "Please select":
-        messagebox.showerror("Error", "Please select a payment method")
+        messagebox.showerror("Error", "This payment method is not a valid "
+        "option. Please select a valid payment method.")
         validate_details = False
         return
 
