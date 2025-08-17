@@ -1107,6 +1107,7 @@ def finish_order():
         message += "Thank you for ordering from Pizza House!"
         validate_details = messagebox.askokcancel("Order Placed", message)
         messagebox.showinfo("Order Confirmation", f"{validate_details}")
+        window.destroy()
 
     elif selected_method == "Please select":
         messagebox.showerror("Error", "This payment method is not a valid "
