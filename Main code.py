@@ -830,7 +830,7 @@ Checkout_label.pack(pady=20)
 
 # Adding instructions for the checkout tab
 Checkout_instructions = tk.Label(Checkout,
-                                 instructions="Please review your order and proceed to payment.",
+                                 text="Please review your order and proceed to payment.",
                                  font=("Arial", 16), bg=bg_color, fg=fg_color)
 Checkout_instructions.pack(pady=10)
 
@@ -946,38 +946,6 @@ def enter_payment_details_card():
     cvv_entry = tk.Entry(payment_window, width=20, show='*')
     cvv_entry.pack(pady=5)
 
-    # Validation function for confirm button
-    def validate_card_details():
-        card_number = card_number_entry.get()
-        expiration = expiration_date_entry.get()
-        cvv = cvv_entry.get()
-
-        errors = []
-
-        # Card number: 16 digits
-        if not card_number.isdigit():
-            errors.append("Card number must contain only digits.")
-        if len(card_number) != 16:
-            errors.append("Card number must be exactly 16 digits.")
-
-        # Expiration date: MM/YY format, length 5
-        if len(expiration) != 5:
-            errors.append("Expiration date must be in MM/YY format (5 characters).")
-        elif not (expiration[:2].isdigit() and expiration[2] == '/' and expiration[3:].isdigit()):
-            errors.append("Expiration date must be in MM/YY format.")
-
-        # CVV: 3 or 4 digits
-        if not cvv.isdigit():
-            errors.append("CVV must contain only digits.")
-        if len(cvv) not in [3, 4]:
-            errors.append("CVV must be 3 or 4 digits.")
-
-        if errors:
-            messagebox.showerror("Invalid Payment Details", "\n".join(errors))
-            return False
-
-        return True
-
     # Adding a confirm button
     confirm_button = tk.Button(payment_window, text="Confirm",
                                command=lambda: (
@@ -988,6 +956,46 @@ def enter_payment_details_card():
                                                 ),
                                 bg=button_color, fg=fg_color)
     confirm_button.pack(pady=10)
+
+
+def validate_card_details():
+    """Validate the card details entered by the user."""
+    card_number = card_number_entry.get()
+    expiration = expiration_date_entry.get()
+    cvv = cvv_entry.get()
+
+    errors = []
+
+    # Card number: 16 digits
+    if not card_number.isdigit():
+        errors.append("Card number must contain only digits.")
+    if len(card_number) != 16:
+        errors.append("Card number must be exactly 16 digits.")
+
+    # Expiration date: MM/YY format, length 5
+    if len(expiration) != 5:
+        errors.append("Expiration date must be in MM/YY format (5 characters).")
+    elif not (expiration[:2].isdigit() and expiration[2] == '/' and expiration[3:].isdigit()):
+        errors.append("Expiration date must be in MM/YY format.")
+    else:
+        month = int(expiration[:2])
+        year = int(expiration[3:])
+        if not (1 <= month <= 12):
+            errors.append("Expiration month must be between 01 and 12.")
+        if year <= 0:
+            errors.append("Expiration year must be a positive number.")
+
+    # CVV: 3 or 4 digits
+    if not cvv.isdigit():
+        errors.append("CVV must contain only digits.")
+    if len(cvv) not in [3, 4]:
+        errors.append("CVV must be 3 or 4 digits.")
+
+    if errors:
+        messagebox.showerror("Invalid Payment Details", "\n".join(errors))
+        return False
+
+    return True
 
 
 # Adding a variable to store the PayPal email entry
@@ -1041,7 +1049,7 @@ def enter_payment_details_cash():
 
     # Adding a label for cash payment
     cash_label = tk.Label(payment_window,
-                          instructions="You have selected Cash on Delivery.\n"
+                          text="You have selected Cash on Delivery.\n"
                           " Please note that change is available only to the nearest dollar.",
                           font=("Arial", 16),
                           bg=button_color_active, fg=fg_color)
