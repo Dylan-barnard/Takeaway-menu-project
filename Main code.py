@@ -719,8 +719,8 @@ def check_deals_in_cart():
             # Buy 1 Pizza, Get 1 Free
             if not any(item in cart for item in pizza_options):
                 messagebox.showinfo("Deal Removed",
-                 "Deal 1 has been removed from your cart as no pizzas are "
-                 "present")
+                                    "Deal 1 has been removed from your cart as no pizzas are "
+                                    "present")
                 applied_deals.remove(deal_name)
 
             # Remove the free pizza from the cart if it exists by iterating
@@ -733,24 +733,24 @@ def check_deals_in_cart():
         elif deal_name == "Deal 2":
             # 20% Off on Orders Above $50
             total_price = sum(price.get(item_name, 0) * quantity for item_name,
-             quantity in cart.items() if "Free" not in item_name)
+                              quantity in cart.items() if "Free" not in item_name)
             if total_price < 50:
                 messagebox.showinfo("Deal Removed",
-                 "Deal 2 has been removed from your cart as total order is "
-                 "below $50")
+                                    "Deal 2 has been removed from your cart as total order is "
+                                    "below $50")
                 applied_deals.remove(deal_name)
 
             # Remove the discounted price if it exists
         if 'discounted_price' in globals() and discounted_price is not None:
-                discounted_price = None
-                update_cart_display()
+            discounted_price = None
+            update_cart_display()
 
         elif deal_name == "Deal 3":
             # Free Sides with Any Pizza
             if not any(item in cart for item in sides_options):
                 messagebox.showinfo("Deal Removed",
-                 "Deal 3 has been removed from your cart as no sides are "
-                 "present")
+                                    "Deal 3 has been removed from your cart as no sides are "
+                                    "present")
                 applied_deals.remove(deal_name)
 
             # Remove the free sides from the cart if they exist
@@ -764,8 +764,8 @@ def check_deals_in_cart():
             dessert_count = sum(cart.get(item[0], 0) for item in Desserts_menu)
             if dessert_count < 2:
                 messagebox.showinfo("Deal Removed",
-                 "Deal 4 has been removed from your cart as less than "
-                 "2 desserts are present")
+                                    "Deal 4 has been removed from your cart as less than "
+                                    "2 desserts are present")
                 applied_deals.remove(deal_name)
 
                 # Remove the free dessert from the cart if it exists
@@ -779,8 +779,8 @@ def check_deals_in_cart():
             pizza_count = sum(cart.get(item[0], 0) for item in pizza_menu)
             if pizza_count < 2:
                 messagebox.showinfo("Deal Removed",
-                 "Deal 5 has been removed from your cart as less than "
-                 "2 pizzas are present")
+                                    "Deal 5 has been removed from your cart as less than "
+                                    "2 pizzas are present")
                 applied_deals.remove(deal_name)
 
             # Remove the free drink from the cart if it exists
@@ -792,51 +792,52 @@ def check_deals_in_cart():
         # Refresh the cart display after checking deals
         update_cart_display()
 
+
     # Adding a remove button to the cart tab
 remove_button = tk.Button(Cart, text="Remove Selected Item",
                           command=remove_from_cart, bg=button_color,
-                            fg=fg_color)
+                          fg=fg_color)
 remove_button.pack(pady=10)
 
 
-# Creating a checkout button in the cart tab
 def checkout():
+    """Handle the checkout process."""
     if not cart:
         messagebox.showerror("Empty Cart", "Your cart is empty!")
         return
     total_price = sum(price.get(item_name, 0) * quantity for item_name,
-     quantity in cart.items() if "Free" not in item_name)
+                      quantity in cart.items() if "Free" not in item_name)
     if 'discounted_price' in globals() and discounted_price is not None:
         total_price = discounted_price
     if messagebox.askyesno("Checkout",
-     "Would you like to proceed with the checkout your total is "
-     f"${total_price:.2f}?"):
+                           "Would you like to proceed with the checkout your total is "
+                           f"${total_price:.2f}?"):
         messagebox.showinfo("Checkout Successful", "Thank you for your order!")
     switch_to_checkout()
 
 
 # Adding a checkout button to the cart tab
 checkout_button = tk.Button(Cart, text="Checkout",
-                             command=checkout, bg=button_color,
-                               fg=fg_color)
+                            command=checkout, bg=button_color,
+                            fg=fg_color)
 checkout_button.pack(pady=20)
 
 # Adding the checkout tab content
 Checkout_label = tk.Label(Checkout, text="Checkout",
-                            font=("Arial", 24), bg=button_color_active,
-                             fg=fg_color)
+                          font=("Arial", 24), bg=button_color_active,
+                          fg=fg_color)
 Checkout_label.pack(pady=20)
 
 # Adding instructions for the checkout tab
 Checkout_instructions = tk.Label(Checkout,
-    text="Please review your order and proceed to payment.",
-    font=("Arial", 16), bg=bg_color, fg=fg_color)
+                                 instructions="Please review your order and proceed to payment.",
+                                 font=("Arial", 16), bg=bg_color, fg=fg_color)
 Checkout_instructions.pack(pady=10)
 
 # Adding a back button to the checkout tab
 back_to_cart_button = tk.Button(Checkout, text="Back to Cart",
-                                 command=switch_to_cart, bg=button_color,
-                                   fg=fg_color)
+                                command=switch_to_cart, bg=button_color,
+                                fg=fg_color)
 back_to_cart_button.pack(pady=10)
 
 # Adding payment methods
@@ -846,26 +847,26 @@ payment_methods = [
 
 # Adding a label for payment methods
 payment_label = tk.Label(Checkout, text="Payment Methods",
-                          font=("Arial", 18), bg=bg_color, fg=fg_color)
+                         font=("Arial", 18), bg=bg_color, fg=fg_color)
 payment_label.pack(pady=10)
 
 # Adding a dropdown menu for payment methods
 payment_var = tk.StringVar(value=payment_methods[0])
 payment_dropdown = tk.OptionMenu(Checkout, payment_var,
-                                   *payment_methods)
+                                 *payment_methods)
 payment_dropdown.config(bg=button_color, fg=fg_color)
 payment_dropdown.pack(pady=10)
 
 
-# Adding a confirm payment button
 def confirm_payment():
+    """Handle the payment confirmation."""
     selected_method = payment_var.get()
     messagebox.showinfo("Payment Confirmed",
-     f"Your payment method {selected_method} has been confirmed.")
+                        f"Your payment method {selected_method} has been confirmed.")
 
 
-# Function to format expiration date
 def format_expiration_date(event, expiration_date_entry):
+    """Format the expiration date entry."""
     # Get the current value of the entry
     current_value = expiration_date_entry.get()
 
@@ -874,8 +875,8 @@ def format_expiration_date(event, expiration_date_entry):
         expiration_date_entry.insert(2, '/')
 
 
-# Function that checks if the expiration date consists only of digits
 def is_digit_only_expiration(input_value):
+    """Check if the expiration date consists only of digits and a slash."""
     current_value = expiration_date_entry.get()
     if input_value == "":
         return True
@@ -886,8 +887,8 @@ def is_digit_only_expiration(input_value):
     return True
 
 
-# Function that checks if the card number consists only of digits
 def is_digit_only_card_number(input_value):
+    """Check if the card number consists only of digits."""
     if input_value == "":
         return True
     if not input_value.isdigit():
@@ -895,8 +896,8 @@ def is_digit_only_card_number(input_value):
     return True
 
 
-# Function that checks if the cvv consists only of digits
 def is_digit_only_cvv(input_value):
+    """Check if the CVV consists only of digits."""
     current_value = cvv_entry.get()
     if input_value == "":
         return True
@@ -905,8 +906,8 @@ def is_digit_only_cvv(input_value):
     return True
 
 
-# Creating a window to enter the payment details for card
 def enter_payment_details_card():
+    """Open a window to enter card payment details."""
     global expiration_date_entry, cvv_entry, card_number_entry
     payment_window = tk.Toplevel(window)
     payment_window.title("Enter Payment Details")
@@ -915,50 +916,76 @@ def enter_payment_details_card():
 
     # Adding a label for payment details
     payment_details_label = tk.Label(payment_window,
-        text="Enter your payment details:", font=("Arial", 16),
-        bg=bg_color, fg=fg_color)
+                                     text="Enter your payment details:", font=("Arial", 16),
+                                     bg=bg_color, fg=fg_color)
     payment_details_label.pack(pady=10)
 
     # Adding an entry for card number
     card_number_label = tk.Label(payment_window, text="Card Number:",
-                                  font=("Arial", 14), bg=bg_color,
-                                  fg=fg_color)
+                                 font=("Arial", 14), bg=bg_color,
+                                 fg=fg_color)
     card_number_label.pack(pady=5)
-    card_number_entry = tk.Entry(payment_window, width=20, validate='key',
-                                validatecommand=(window.register(is_digit_only_card_number), '%P'))
+    card_number_entry = tk.Entry(payment_window, width=20)
+
     card_number_entry.pack(pady=5)
 
     # Adding an entry for expiration date
     expiration_date_label = tk.Label(payment_window,
-        text="Expiration Date (MM/YY):", font=("Arial", 14),
-        bg=bg_color, fg=fg_color)
+                                     text="Expiration Date (MM/YY):", font=("Arial", 14),
+                                     bg=bg_color, fg=fg_color)
     expiration_date_label.pack(pady=5)
-    expiration_date_entry = tk.Entry(payment_window, width=20,
-                                    validate='key', validatecommand=(
-                                        window.register(is_digit_only_expiration),
-                                        '%P'))
+    expiration_date_entry = tk.Entry(payment_window, width=20)
     expiration_date_entry.pack(pady=5)
     expiration_date_entry.bind("<KeyRelease>",
-     lambda event: format_expiration_date(event, expiration_date_entry))
+                               lambda event: format_expiration_date(event, expiration_date_entry))
 
     # Adding an entry for CVV
     cvv_label = tk.Label(payment_window, text="CVV:", font=("Arial", 14),
-                          bg=bg_color, fg=fg_color)
+                         bg=bg_color, fg=fg_color)
     cvv_label.pack(pady=5)
-    cvv_entry = tk.Entry(payment_window, width=20, show='*', 
-                         validate='key', validatecommand=(
-                             window.register(is_digit_only_cvv), '%P'))
+    cvv_entry = tk.Entry(payment_window, width=20, show='*')
     cvv_entry.pack(pady=5)
+
+    # Validation function for confirm button
+    def validate_card_details():
+        card_number = card_number_entry.get()
+        expiration = expiration_date_entry.get()
+        cvv = cvv_entry.get()
+
+        errors = []
+
+        # Card number: 16 digits
+        if not card_number.isdigit():
+            errors.append("Card number must contain only digits.")
+        if len(card_number) != 16:
+            errors.append("Card number must be exactly 16 digits.")
+
+        # Expiration date: MM/YY format, length 5
+        if len(expiration) != 5:
+            errors.append("Expiration date must be in MM/YY format (5 characters).")
+        elif not (expiration[:2].isdigit() and expiration[2] == '/' and expiration[3:].isdigit()):
+            errors.append("Expiration date must be in MM/YY format.")
+
+        # CVV: 3 or 4 digits
+        if not cvv.isdigit():
+            errors.append("CVV must contain only digits.")
+        if len(cvv) not in [3, 4]:
+            errors.append("CVV must be 3 or 4 digits.")
+
+        if errors:
+            messagebox.showerror("Invalid Payment Details", "\n".join(errors))
+            return False
+
+        return True
 
     # Adding a confirm button
     confirm_button = tk.Button(payment_window, text="Confirm",
-                                command=lambda: [messagebox.askyesno(
-                                    "Payment Details Entered",
-                                    "Your payment details have been entered"
-                                    " successfully."
-                                    " Are these details you have entered"
-                                    " correct?"), 
-                                    payment_window.destroy()],
+                               command=lambda: (
+                                                validate_card_details() and
+                                                messagebox.askyesno("Payment Details Entered",
+                                                                    "Your payment details have been entered successfully. Are these details correct?"
+                                                ) and payment_window.destroy()
+                                                ),
                                 bg=button_color, fg=fg_color)
     confirm_button.pack(pady=10)
 
@@ -967,8 +994,8 @@ def enter_payment_details_card():
 paypal_email_entry = ""
 
 
-# Adding a button to enter payment details for PayPal
 def enter_payment_details_paypal():
+    """Open a window to enter PayPal payment details."""
     global paypal_email_entry
     payment_window = tk.Toplevel(window)
     payment_window.title("Enter Payment Details")
@@ -977,27 +1004,27 @@ def enter_payment_details_paypal():
 
     # Adding a label for PayPal details
     paypal_label = tk.Label(payment_window,
-        text="Enter your PayPal email:", font=("Arial", 16),
-        bg=bg_color, fg=fg_color)
+                            text="Enter your PayPal email:", font=("Arial", 16),
+                            bg=bg_color, fg=fg_color)
     paypal_label.pack(pady=10)
 
     # Adding an entry for PayPal email
     paypal_email_entry = tk.Entry(payment_window, width=30)
     paypal_email_entry.pack(pady=10)
-    
+
     # Adding a confirm button
     confirm_button = tk.Button(payment_window, text="Confirm",
-                                command=lambda: [store_paypal_email(), 
-                                messagebox.showinfo("Payment Details Entered",
-                                    "Your PayPal email has been entered"
-                                    " successfully."),
-                                    payment_window.destroy()],
-                                bg=button_color, fg=fg_color)
+                               command=lambda: [store_paypal_email(),
+                                                messagebox.showinfo("Payment Details Entered",
+                                                                    "Your PayPal email has been entered"
+                                                                    " successfully."),
+                                                payment_window.destroy()],
+                               bg=button_color, fg=fg_color)
     confirm_button.pack(pady=10)
 
 
-# Function to store the payment details for paypal email
 def store_paypal_email():
+    """Store the PayPal email entered by the user."""
     global paypal_email_entry, paypal_email
     paypal_email = paypal_email_entry.get()
     if not paypal_email:
@@ -1005,8 +1032,8 @@ def store_paypal_email():
         return
 
 
-# Adding a button to enter payment details for cash
 def enter_payment_details_cash():
+    """Open a window to enter Cash on Delivery payment details."""
     payment_window = tk.Toplevel(window)
     payment_window.title("Cash on Delivery")
     payment_window.geometry("700x300")
@@ -1014,26 +1041,26 @@ def enter_payment_details_cash():
 
     # Adding a label for cash payment
     cash_label = tk.Label(payment_window,
-        text="You have selected Cash on Delivery.\n"
-        " Please note that change is available only to the nearest dollar.",
-         font=("Arial", 16),
-        bg=button_color_active, fg=fg_color)
+                          instructions="You have selected Cash on Delivery.\n"
+                          " Please note that change is available only to the nearest dollar.",
+                          font=("Arial", 16),
+                          bg=button_color_active, fg=fg_color)
     cash_label.pack(pady=10)
 
     # Adding a confirm button
     confirm_button = tk.Button(payment_window, text="Confirm",
-                                command=lambda: [messagebox.askyesno(
+                               command=lambda: [messagebox.askyesno(
                                     "Payment Method Confirmed",
                                     "Your payment method has been confirmed"
                                     " successfully.\n"
                                     "Would you like to proceed?"),
                                     payment_window.destroy()],
-                                bg=button_color, fg=fg_color)
+                               bg=button_color, fg=fg_color)
     confirm_button.pack(pady=10)
 
 
-# Adding a button to enter payment details based on the selected method
 def enter_payment_details():
+    """Open a window to enter payment details based on the selected method."""
     selected_method = payment_var.get()
     if selected_method == "Credit Card" or selected_method == "Debit Card":
         enter_payment_details_card()
@@ -1047,18 +1074,18 @@ def enter_payment_details():
 
 # Adding a button to enter payment details
 enter_payment_details_button = tk.Button(Checkout,
-    text="Enter Payment Details", command=enter_payment_details,
-    bg=button_color, fg=fg_color)
+                                         text="Enter Payment Details", command=enter_payment_details,
+                                         bg=button_color, fg=fg_color)
 enter_payment_details_button.pack(pady=10)
 
 
-# Function to finish the order
 def finish_order():
+    """Finish the order and process payment."""
     if not cart:
         messagebox.showerror("Empty Cart", "Your cart is empty!")
         return
     total_price = sum(price.get(item_name, 0) * quantity for item_name,
-     quantity in cart.items() if "Free" not in item_name)
+                      quantity in cart.items() if "Free" not in item_name)
 
     if 'discounted_price' in globals() and discounted_price is not None:
         total_price = discounted_price
@@ -1075,24 +1102,24 @@ def finish_order():
 
     elif selected_method == "Please select":
         messagebox.showerror("Error", "This payment method is not a valid "
-        "option. Please select a valid payment method.")
+                             "option. Please select a valid payment method.")
         validate_details = False
         return
 
     else:
         messagebox.showinfo("Order Confirmation", "Your order has been "
-        "placed successfully!")
+                            "placed successfully!")
         window.destroy()  # Close the window after finishing the order
 
 
 # Adding a button to finish the order
 finish_order_button = tk.Button(Checkout, text="Finish Order",
-                             command=finish_order, bg=button_color,
-                               fg=fg_color)
+                                command=finish_order, bg=button_color,
+                                fg=fg_color)
 finish_order_button.pack(pady=100)
 
 # Adding the logo
-logo = Image.open("logo.jpg") 
+logo = Image.open("logo.jpg")
 logo = logo.resize((125, 125))
 logo = ImageTk.PhotoImage(logo)
 logo_label = tk.Label(image=logo, bg=bg_color)
